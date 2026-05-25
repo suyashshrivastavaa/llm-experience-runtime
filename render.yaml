@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: llm-experience-runtime
+    runtime: docker
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: OPENAI_EMBEDDING_MODEL
+        value: text-embedding-3-small
+      - key: ARTIFACTS_DIR
+        value: /data/artifacts
+      - key: INDICES_DIR
+        value: /data/indices
+      - key: CHUNK_SIZE
+        value: "1000"
+      - key: CHUNK_OVERLAP
+        value: "200"
+      - key: RETRIEVAL_K
+        value: "4"
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
