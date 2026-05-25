@@ -4,17 +4,26 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 
 from app.core.config import settings
 
-_embeddings: HuggingFaceEmbeddings | None = None
+_embeddings = None
 
 
-def _get_embeddings() -> HuggingFaceEmbeddings:
+def _get_embeddings():
     global _embeddings
     if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        if settings.use_huggingface:
+            # Cloud: use HF Inference API — no local model loaded, saves ~200MB RAM
+            from langchain_huggingface import HuggingFaceEndpointEmbeddings
+            _embeddings = HuggingFaceEndpointEmbeddings(
+                model="sentence-transformers/all-MiniLM-L6-v2",
+                huggingfacehub_api_token=settings.hf_api_token,
+            )
+        else:
+            # Local: run embeddings on-device via sentence-transformers
+            from langchain_huggingface import HuggingFaceEmbeddings
+            _embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     return _embeddings
 
 
