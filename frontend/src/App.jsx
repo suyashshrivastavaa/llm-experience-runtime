@@ -32,8 +32,10 @@ function UploadModal({ onClose, onUploaded }) {
     fd.append('file', file)
     try {
       const res = await fetch(`${API}/ingest/`, { method: 'POST', body: fd })
-      if (!res.ok) throw new Error((await res.json()).detail)
-      const data = await res.json()
+      const text = await res.text()
+      let data
+      try { data = JSON.parse(text) } catch { throw new Error(`Server error (${res.status}): ${text.slice(0, 200) || 'empty response'}`) }
+      if (!res.ok) throw new Error(data.detail || `Error ${res.status}`)
       onUploaded(data)
       onClose()
     } catch (e) {
